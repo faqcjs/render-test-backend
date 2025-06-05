@@ -1,6 +1,7 @@
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const path = require('path')
 const app = express()
 
 // Middleware
@@ -41,44 +42,43 @@ const fechaActual = () =>{
 }
 
 const generateId = () => {
-  const id = Math.floor(Math.random()*1000000)
-  return id
+    const id = Math.floor(Math.random()*1000000)
+    return id
 }
 
-app.get('/api/info', (request, response)=>{
+app.get('/api/info', (request, response) => {
     response.send(`<h1>Agenda de contacto</h1><br><p>Tienes la informacion de ${persons.length} personas</p><br><p>${fechaActual()}</p>`)
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id =  Number(request.params.id) 
-  const person = persons.find(person => person.id === id)
-  
-  if(person) {
-    response.json(person)
-  }else{
-    response.status(404).end()
-  }
+    const id = Number(request.params.id)
+    const person = persons.find(person => person.id === id)
+    
+    if(person) {
+        response.json(person)
+    } else {
+        response.status(404).end()
+    }
 })
 
-app.delete('/api/persons/:id', (request, response)=>{
+app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
     persons = persons.filter(person => person.id !== id)
-
     response.status(204).end()
 })
 
-app.post("/api/persons", (request, response)=>{
+app.post("/api/persons", (request, response) => {
     const body = request.body
     const name = body.name
     const nameAgendado = persons.find(person => person.name === name)
-    console.log(nameAgendado)
-    if(!body.name || !body.number){
+
+    if(!body.name || !body.number) {
         return response.status(400).json({
             error: 'content missing'
         })
     }
 
-    if( nameAgendado){
+    if(nameAgendado) {
         return response.status(400).json({
             error: 'name must be unique'
         })
@@ -90,17 +90,16 @@ app.post("/api/persons", (request, response)=>{
         number: body.number
     }
     persons = persons.concat(person)
-    
     response.json(person)
 })
 
-app.get('/api/persons', (request, response) =>{
+app.get('/api/persons', (request, response) => {
     response.json(persons)
 })
 
-// Manejador para cualquier otra ruta que no sea /api/*
+// Servir index.html para todas las rutas no-API
 app.get('*', (request, response) => {
-    response.sendFile('build/index.html', {root: '.'})
+    response.sendFile(path.join(__dirname, 'build', 'index.html'))
 })
 
 const PORT = process.env.PORT || 3001
